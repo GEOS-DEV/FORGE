@@ -1,0 +1,341 @@
+<?xml version="1.0" ?>
+
+<Problem>
+
+  <Included>
+    <File name="forgeStimulation_hydroFrac_3d_base.xml"/>
+  </Included>  
+
+  <Solvers
+    gravityVector="{ 0.0, 0.0, -9.81 }">
+    <Hydrofracture
+      name="hydrofracture"
+      solidSolverName="lagsolve"
+      flowSolverName="SinglePhaseFlow"
+      surfaceGeneratorName="SurfaceGen"
+      logLevel="1"
+      targetRegions="{ Fracture }"
+      maxNumResolves="10"
+      useQuasiNewton="1">
+      <NonlinearSolverParameters
+        newtonTol="1e-3"
+        lineSearchAction="None"
+        newtonMaxIter="50"
+        maxTimeStepCuts="10"
+	      maxAllowedResidualNorm="1e40"/>
+      <LinearSolverParameters
+        solverType="gmres"
+        preconditionerType="mgr"
+        krylovAdaptiveTol="1"
+        logLevel="1"/>
+    </Hydrofracture>
+
+    <SolidMechanicsLagrangianSSLE
+      name="lagsolve"
+      timeIntegrationOption="QuasiStatic"
+      logLevel="1"
+      discretization="FE1"
+      targetRegions="{ Domain, Fracture }"
+      contactRelationName="fractureContact"
+      contactPenaltyStiffness="1.0e15">
+      <NonlinearSolverParameters
+        newtonTol="1.0e-3"/>
+      <LinearSolverParameters
+        solverType="gmres"
+        logLevel="1"/>
+    </SolidMechanicsLagrangianSSLE>
+
+    <SinglePhaseFVM
+      name="SinglePhaseFlow"
+      logLevel="1"
+      discretization="fluidTPFA"
+      targetRegions="{ Domain, Fracture }">
+      <NonlinearSolverParameters
+        newtonTol="1.0e-3"/>
+      <LinearSolverParameters
+        solverType="gmres"
+        logLevel="1"/>
+    </SinglePhaseFVM>
+
+    <SurfaceGenerator
+      name="SurfaceGen"
+      targetRegions="{ Domain }"
+      nodeBasedSIF="1"      
+      initialRockToughness="-1.0"
+      toughnessScalingFactor="0.4"
+      fractureOrigin="{200.0, 240.0, 298.0}"
+      mpiCommOrder="1"/>
+  </Solvers>
+
+  <Mesh>
+    <InternalMesh
+      name="mesh1"
+      elementTypes="{ C3D8 }"
+      xCoords="{ -20, 180, 198, 200, 202, 220, 400 }"
+      yCoords="{ -300, 140, 238, 240, 242, 340, 800 }"
+      zCoords="{ 30, 230, 296, 298, 300, 550, 790}"
+      nx="{ 15, 9, 2, 2, 9, 9 }"
+      ny="{ 22, 98, 2, 2, 98, 23 }"
+      nz="{ 10, 66, 2, 2, 250, 12 }"
+      cellBlockNames="{ cb1 }"/>
+  </Mesh>
+
+  <Events
+    minTime="-1e7"
+    maxTime="9600">
+    <SoloEvent
+      name="preFracture"
+      target="/Solvers/SurfaceGen"/>
+
+    <PeriodicEvent
+      name="outputs0"
+      cycleFrequency="1"
+      beginTime="0.0"
+      endTime="10.0"
+      target="/Outputs/vtkOutput"/>
+
+    <PeriodicEvent
+      name="outputs1"
+      cycleFrequency="10"
+      beginTime="10.0"
+      target="/Outputs/vtkOutput"/>
+
+    <PeriodicEvent
+      name="solverApplicationsEquilibration"
+      beginTime="-1e7"
+      endTime="0"
+      forceDt="1e7"
+      target="/Solvers/hydrofracture"/>
+
+    <PeriodicEvent
+      name="solverApplications0"
+      beginTime="0.0"
+      endTime="10.0"
+      maxEventDt="0.5"
+      target="/Solvers/hydrofracture"/>
+
+    <PeriodicEvent
+      name="solverApplications2"
+      beginTime="10.0"
+      endTime="100.0"
+      maxEventDt="1.0"
+      target="/Solvers/hydrofracture"/>
+
+    <PeriodicEvent
+      name="solverApplications3"
+      beginTime="100.0"
+      endTime="400.0"
+      maxEventDt="10.0"
+      target="/Solvers/hydrofracture"/>
+
+    <PeriodicEvent
+      name="solverApplications4"
+      beginTime="400.0"
+      endTime="1000.0"
+      maxEventDt="40.0"
+      target="/Solvers/hydrofracture"/>
+
+    <PeriodicEvent
+      name="solverApplications5"
+      beginTime="1000.0"
+      maxEventDt="100.0"
+      target="/Solvers/hydrofracture"/>
+
+    <PeriodicEvent
+      name="restarts"
+      cycleFrequency="40"
+      target="/Outputs/restartOutput"/>
+    
+  </Events>
+
+  <Functions>
+    <TableFunction
+      name="apertureTable"
+      coordinates="{ -1e-3, 0.0 }"
+      values="{ 0.001e-3, 4e-5 }"/>
+
+    <TableFunction
+      name="injectorTotalRateTable"
+      inputVarNames="{ time }"
+      coordinateFiles="{ ../injectionTable3/time_original.geos }"
+      voxelFile="../injectionTable3/rate_original.geos" 
+      interpolation="lower"/>
+  </Functions>
+
+  <FieldSpecifications>
+    <FieldSpecification 
+      name="Sh"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="rock_stress"
+      component="0"
+      scale="-4.345e7"/>
+
+    <FieldSpecification 
+      name="SH"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="rock_stress"
+      component="1"
+      scale="-4.8e7"/>
+
+    <FieldSpecification 
+      name="Sv"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="rock_stress"
+      component="2"
+      scale="-6.2e7"/>
+    
+    <FieldSpecification
+      name="initialPressure"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="pressure"
+      scale="2.4e7"/>
+
+    <FieldSpecification
+       name="fracturePressure"
+       objectPath="ElementRegions/Fracture"
+       fieldName="pressure"
+       setNames="{all}"
+       scale="2.4e7"
+       beginTime="-1e10"
+       endTime="0.0"/> 
+
+    <FieldSpecification
+      name="separableFace"
+      initialCondition="1"
+      setNames="{ core }"
+      objectPath="faceManager"
+      fieldName="isFaceSeparable"
+      scale="1"/>
+
+    <FieldSpecification
+      name="frac"
+      initialCondition="1"
+      setNames="{ stage3Frac }"
+      objectPath="faceManager"
+      fieldName="ruptureState"
+      scale="1"/>
+
+    <FieldSpecification
+      name="yconstraint"
+      objectPath="nodeManager"
+      fieldName="totalDisplacement"
+      component="1"
+      scale="0.0"
+      setNames="{ yneg, ypos }"/>
+
+    <FieldSpecification
+      name="zconstraint"
+      objectPath="nodeManager"
+      fieldName="totalDisplacement"
+      component="2"
+      scale="0.0"
+      setNames="{ zneg, zpos }"/>
+
+    <FieldSpecification
+      name="xconstraint"
+      objectPath="nodeManager"
+      fieldName="totalDisplacement"
+      component="0"
+      scale="0.0"
+      setNames="{ xneg, xpos }"/>
+
+    <SourceFlux
+      name="sourceTerm"
+      logLevel="0"
+      objectPath="ElementRegions/Fracture"
+      scale="-2.65"
+      setNames="{ source }"
+      functionName="injectorTotalRateTable"/>
+      
+    <FieldSpecification
+      name="KIC_00"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="K_IC_00"
+      scale="5e6"/>
+    
+    <FieldSpecification
+      name="KIC_10"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="K_IC_10"
+      scale="5e6"/>
+    
+    <FieldSpecification
+      name="KIC_20"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="K_IC_20"
+      scale="5e6"/>
+
+    <FieldSpecification
+      name="KIC_01"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="K_IC_01"
+      scale="5e6"/>
+    
+    <FieldSpecification
+      name="KIC_11"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="K_IC_11"
+      scale="5e6"/>
+    
+    <FieldSpecification
+      name="KIC_21"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="K_IC_21"
+      scale="5e6"/>
+    
+    <FieldSpecification
+      name="KIC_02"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="K_IC_02"
+      scale="5.6e6"/>
+    
+    <FieldSpecification
+      name="KIC_12"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="K_IC_12"
+      scale="5.6e6"/>
+    
+    <FieldSpecification
+      name="KIC_22"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="K_IC_22"
+      scale="5.6e6"/>
+  </FieldSpecifications>
+
+  <Outputs>
+    <VTK
+      name="vtkOutput"
+      plotFileRoot="vtkOutput_stimulation_3_1x1cellSize_DFNPerm_refinedRate_deltaKIc=6e5_scale=0p4"/>
+
+    <Restart
+      name="restartOutput"/>
+
+  </Outputs>
+
+</Problem>

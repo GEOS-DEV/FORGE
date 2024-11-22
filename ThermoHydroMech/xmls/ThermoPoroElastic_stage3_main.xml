@@ -1,0 +1,181 @@
+<?xml version="1.0" ?>
+
+<Problem>
+  <Included>
+    <File name="./ThermoPoroElastic_stage3_base.xml" />
+  </Included>
+
+  <Solvers
+  gravityVector="{ 0.0, 0.0, -9.81 }">
+  
+  <!-- SPHINX_POROMECHANICSSOLVER -->    
+  <SinglePhasePoromechanics
+    name="thermoPoroSolver"
+    solidSolverName="solidMechSolver"
+    flowSolverName="flowSolver"
+    isThermal="1"
+    logLevel="1"
+    targetRegions="{ Matrix, InjectionZone }">
+    <NonlinearSolverParameters
+      couplingType="FullyImplicit"
+      newtonTol="1e-3"
+      lineSearchAction="None"
+      newtonMaxIter="200"
+	    maxAllowedResidualNorm="1e40"/>
+    <LinearSolverParameters
+        solverType="gmres"
+        preconditionerType="mgr"
+        krylovTol="1e-5"/>
+  </SinglePhasePoromechanics>
+  <!-- SPHINX_POROMECHANICSSOLVER_END -->
+  <!-- SPHINX_MECHANICALSOLVER -->    
+  <SolidMechanicsLagrangianSSLE
+    name="solidMechSolver"
+    timeIntegrationOption="QuasiStatic"
+    logLevel="1"
+    discretization="FE1"
+    targetRegions="{ Matrix, InjectionZone }"/>
+  <!-- SPHINX_MECHANICALSOLVER_END -->
+  <!-- SPHINX_SINGLEPHASEFVM -->    
+  <SinglePhaseFVM
+    name="flowSolver"
+    logLevel="1"
+    discretization="tpfaFlow"
+    temperature="273.0"
+    isThermal="1"
+    targetRegions="{ Matrix, InjectionZone }">
+    <NonlinearSolverParameters
+      newtonMaxIter="100"
+      newtonMinIter="0"
+      newtonTol="1.0e-4"/>
+    <LinearSolverParameters
+      solverType="gmres"
+      preconditionerType="amg"
+      krylovTol="1e-5"/>
+  </SinglePhaseFVM>
+  <!-- SPHINX_SINGLEPHASEFVM_END -->    
+ </Solvers>
+
+  <Mesh>
+    <InternalMesh
+      name="mesh1"
+      elementTypes="{ C3D8 }"
+      xCoords="{ -20, 140, 198, 202, 500, 600 }"
+      yCoords="{ -300, 100, 236, 244, 440, 800 }"
+      zCoords="{ 30, 90, 294, 302, 610, 790}"
+      nx="{ 10, 29, 2, 149, 5 }"
+      ny="{ 22, 68, 4, 98, 23 }"
+      nz="{ 3, 102, 4, 154, 12 }"
+      cellBlockNames="{ cb-0_0_0, cb-1_0_0, cb-2_0_0, cb-3_0_0, cb-4_0_0, 
+                        cb-0_1_0, cb-1_1_0, cb-2_1_0, cb-3_1_0, cb-4_1_0, 
+                        cb-0_2_0, cb-1_2_0, cb-2_2_0, cb-3_2_0, cb-4_2_0, 
+                        cb-0_3_0, cb-1_3_0, cb-2_3_0, cb-3_3_0, cb-4_3_0, 
+                        cb-0_4_0, cb-1_4_0, cb-2_4_0, cb-3_4_0, cb-4_4_0, 
+                        cb-0_0_1, cb-1_0_1, cb-2_0_1, cb-3_0_1, cb-4_0_1, 
+                        cb-0_1_1, cb-1_1_1, cb-2_1_1, cb-3_1_1, cb-4_1_1, 
+                        cb-0_2_1, cb-1_2_1, cb-2_2_1, cb-3_2_1, cb-4_2_1, 
+                        cb-0_3_1, cb-1_3_1, cb-2_3_1, cb-3_3_1, cb-4_3_1, 
+                        cb-0_4_1, cb-1_4_1, cb-2_4_1, cb-3_4_1, cb-4_4_1, 
+                        cb-0_0_2, cb-1_0_2, cb-2_0_2, cb-3_0_2, cb-4_0_2, 
+                        cb-0_1_2, cb-1_1_2, cb-2_1_2, cb-3_1_2, cb-4_1_2, 
+                        cb-0_2_2, cb-1_2_2, cb-2_2_2, cb-3_2_2, cb-4_2_2, 
+                        cb-0_3_2, cb-1_3_2, cb-2_3_2, cb-3_3_2, cb-4_3_2, 
+                        cb-0_4_2, cb-1_4_2, cb-2_4_2, cb-3_4_2, cb-4_4_2, 
+                        cb-0_0_3, cb-1_0_3, cb-2_0_3, cb-3_0_3, cb-4_0_3, 
+                        cb-0_1_3, cb-1_1_3, cb-2_1_3, cb-3_1_3, cb-4_1_3, 
+                        cb-0_2_3, cb-1_2_3, cb-2_2_3, cb-3_2_3, cb-4_2_3, 
+                        cb-0_3_3, cb-1_3_3, cb-2_3_3, cb-3_3_3, cb-4_3_3, 
+                        cb-0_4_3, cb-1_4_3, cb-2_4_3, cb-3_4_3, cb-4_4_3, 
+                        cb-0_0_4, cb-1_0_4, cb-2_0_4, cb-3_0_4, cb-4_0_4, 
+                        cb-0_1_4, cb-1_1_4, cb-2_1_4, cb-3_1_4, cb-4_1_4, 
+                        cb-0_2_4, cb-1_2_4, cb-2_2_4, cb-3_2_4, cb-4_2_4, 
+                        cb-0_3_4, cb-1_3_4, cb-2_3_4, cb-3_3_4, cb-4_3_4, 
+                        cb-0_4_4, cb-1_4_4, cb-2_4_4, cb-3_4_4, cb-4_4_4 }">
+    </InternalMesh>
+  </Mesh>
+
+  <ElementRegions>
+    <CellElementRegion
+      name="Matrix"
+      cellBlocks="{ cb-0_0_0, cb-1_0_0, cb-2_0_0, cb-3_0_0, cb-4_0_0, 
+                    cb-0_1_0, cb-1_1_0, cb-2_1_0, cb-3_1_0, cb-4_1_0, 
+                    cb-0_2_0, cb-1_2_0, cb-2_2_0, cb-3_2_0, cb-4_2_0, 
+                    cb-0_3_0, cb-1_3_0, cb-2_3_0, cb-3_3_0, cb-4_3_0, 
+                    cb-0_4_0, cb-1_4_0, cb-2_4_0, cb-3_4_0, cb-4_4_0, 
+                    cb-0_0_1, cb-1_0_1, cb-2_0_1, cb-3_0_1, cb-4_0_1, 
+                    cb-0_1_1, cb-1_1_1, cb-2_1_1, cb-3_1_1, cb-4_1_1, 
+                    cb-0_2_1, cb-1_2_1, cb-2_2_1, cb-3_2_1, cb-4_2_1, 
+                    cb-0_3_1, cb-1_3_1, cb-2_3_1, cb-3_3_1, cb-4_3_1, 
+                    cb-0_4_1, cb-1_4_1, cb-2_4_1, cb-3_4_1, cb-4_4_1, 
+                    cb-0_0_2, cb-1_0_2, cb-2_0_2, cb-3_0_2, cb-4_0_2, 
+                    cb-0_1_2, cb-1_1_2, cb-2_1_2, cb-3_1_2, cb-4_1_2, 
+                    cb-0_2_2, cb-1_2_2, cb-3_2_2, cb-4_2_2, 
+                    cb-0_3_2, cb-1_3_2, cb-2_3_2, cb-3_3_2, cb-4_3_2, 
+                    cb-0_4_2, cb-1_4_2, cb-2_4_2, cb-3_4_2, cb-4_4_2, 
+                    cb-0_0_3, cb-1_0_3, cb-2_0_3, cb-3_0_3, cb-4_0_3, 
+                    cb-0_1_3, cb-1_1_3, cb-2_1_3, cb-3_1_3, cb-4_1_3, 
+                    cb-0_2_3, cb-1_2_3, cb-2_2_3, cb-3_2_3, cb-4_2_3, 
+                    cb-0_3_3, cb-1_3_3, cb-2_3_3, cb-3_3_3, cb-4_3_3, 
+                    cb-0_4_3, cb-1_4_3, cb-2_4_3, cb-3_4_3, cb-4_4_3, 
+                    cb-0_0_4, cb-1_0_4, cb-2_0_4, cb-3_0_4, cb-4_0_4, 
+                    cb-0_1_4, cb-1_1_4, cb-2_1_4, cb-3_1_4, cb-4_1_4, 
+                    cb-0_2_4, cb-1_2_4, cb-2_2_4, cb-3_2_4, cb-4_2_4, 
+                    cb-0_3_4, cb-1_3_4, cb-2_3_4, cb-3_3_4, cb-4_3_4, 
+                    cb-0_4_4, cb-1_4_4, cb-2_4_4, cb-3_4_4, cb-4_4_4 }"
+      materialList="{ rock, water, thermalCond }"/>
+
+    <CellElementRegion
+      name="InjectionZone"
+      cellBlocks="{ cb-2_2_2 }"
+      materialList="{ rock, water, thermalCond }"/>
+  </ElementRegions>
+
+  <Events
+    minTime="-1e10"
+    maxTime="40000.0">
+
+    <PeriodicEvent
+      name="outputs"
+      cycleFrequency="5"
+      target="/Outputs/thermoPoroVTKOutput"/>
+
+    <SoloEvent 
+      beginTime="-1e10" 
+      name="singlephasePoromechanicsPreEquilibrationStep"
+      target="/Tasks/singlephasePoromechanicsPreEquilibrationStep"
+      targetTime="-1e10" />
+
+    <PeriodicEvent
+      name="solverApplications0"
+      beginTime="0.0"
+      endTime="10000.0"
+      maxEventDt="20.0"
+      target="/Solvers/thermoPoroSolver"/>
+
+    <PeriodicEvent
+      name="solverApplications1"
+      beginTime="10000.0"
+      maxEventDt="100.0"
+      target="/Solvers/thermoPoroSolver"/>
+
+    <PeriodicEvent
+      name="restarts"
+      cycleFrequency="20"
+      target="/Outputs/restartOutput"/>
+    
+  </Events>
+
+  <Tasks>
+    <SinglePhasePoromechanicsInitialization 
+      logLevel="1"
+      name="singlephasePoromechanicsPreEquilibrationStep"
+      poromechanicsSolverName="thermoPoroSolver" />
+  </Tasks>
+
+  <Geometry>
+    <Box
+      name="source"
+      xMin="{ 197.9, 235.9, 293.9 }"
+      xMax="{ 202.1, 244.1, 302.1 }" />
+  </Geometry>
+</Problem>

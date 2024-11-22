@@ -1,0 +1,116 @@
+<?xml version="1.0" ?>
+
+<Problem>
+
+  <NumericalMethods>
+    <FiniteElements>
+      <FiniteElementSpace
+        name="FE1"
+        order="1"/>
+    </FiniteElements>
+    <FiniteVolume>
+      <TwoPointFluxApproximation
+        name="fluidTPFA"/>
+    </FiniteVolume>
+  </NumericalMethods>
+
+  <ElementRegions>
+    <CellElementRegion
+      name="Domain"
+      cellBlocks="{ cb1 }"
+      materialList="{ porousRock, rock, water }"/>
+
+    <SurfaceElementRegion
+      name="Fracture"      
+      defaultAperture="4e-5"
+      materialList="{ gel, rock, fractureFilling, fractureContact, hApertureModel }"/>
+  </ElementRegions>
+
+  <Constitutive>
+    <CompressibleSinglePhaseFluid
+      name="water"
+      defaultDensity="1000"
+      defaultViscosity="1e-3"
+      referencePressure="0.0"
+      referenceDensity="1000"
+      compressibility="5e-10"
+      referenceViscosity="1e-3"
+      viscosibility="0.0"/>
+
+    <CompressibleSinglePhaseFluid
+      name="gel"
+      defaultDensity="1000"
+      defaultViscosity="70e-3"
+      referencePressure="0.0"
+      referenceDensity="1000"
+      compressibility="5e-10"
+      referenceViscosity="70e-3"
+      viscosibility="0.0"/>
+
+    <CompressibleSolidConstantPermeability
+      name="porousRock"
+      solidModelName="nullSolid"
+      porosityModelName="rockPorosity"
+      permeabilityModelName="rockPerm"/>
+
+    <ConstantPermeability
+      name="rockPerm"
+      permeabilityComponents="{ 50e-18, 50e-18, 50e-18 }"/>
+    <PressurePorosity
+      name="rockPorosity"
+      defaultReferencePorosity="0.01"
+      referencePressure="0.0"
+      compressibility="1e-10"/>
+
+    <ElasticIsotropic
+      name="rock"
+      defaultDensity="3625"
+      defaultBulkModulus="22983333333.333332"
+      defaultShearModulus="10607692307.692307"/>
+
+    <CompressibleSolidParallelPlatesPermeability
+      name="fractureFilling"
+      solidModelName="nullSolid"
+      porosityModelName="fracturePorosity"
+      permeabilityModelName="fracturePerm"/>
+
+    <NullModel
+      name="nullSolid"/>
+
+    <PressurePorosity
+      name="fracturePorosity"
+      defaultReferencePorosity="1.00"
+      referencePressure="0.0"
+      compressibility="0.0"/>
+
+    <ParallelPlatesPermeability
+      name="fracturePerm"/>
+
+    <FrictionlessContact
+      name="fractureContact"/>
+
+    <HydraulicApertureTable
+      name="hApertureModel"
+      apertureTableName="apertureTable"/>  
+  </Constitutive>
+
+  <Geometry>
+    <Box
+      name="stage3Frac"
+      xMin="{ 199.9, 237.9, 295.9 }"
+      xMax="{ 200.1, 242.1, 300.1 }" />
+
+    <Box
+      name="source"
+      xMin="{ 199.9, 238.9, 296.9 }"
+      xMax="{ 200.1, 241.1, 299.1 }" />
+
+    <Box
+      name="core"
+      xMin="{ 199.9, -2000.1, -2000.1 }"
+      xMax="{ 200.1, 2000.1, 2000.1 }"/>
+  </Geometry>
+
+  
+</Problem>
+

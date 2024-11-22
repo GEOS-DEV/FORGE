@@ -1,0 +1,461 @@
+<?xml version="1.0" ?>
+
+<Problem>
+  <Solvers
+    gravityVector="{ 0.0, 0.0, 0.0 }">
+    <PhaseFieldPoromechanics
+      name="phasefieldPoroSolve"
+      poromechanicsSolverName="poroSolve"
+      damageSolverName="damageSolve"
+      logLevel="1"
+      targetRegions="{ Region1 }">
+      <NonlinearSolverParameters
+        couplingType="Sequential"
+        lineSearchAction="None"  	  
+        newtonMaxIter="100"/>
+    </PhaseFieldPoromechanics>
+
+    <SinglePhasePoromechanics
+      name="poroSolve"
+      solidSolverName="solidMech"
+      flowSolverName="singlePhaseFlow"
+      logLevel="1"
+      targetRegions="{ Region1 }"
+      damageFlag="1">
+      <NonlinearSolverParameters
+        newtonMaxIter="100"
+        newtonTol="1.0e-6"/>
+      <LinearSolverParameters
+        solverType="gmres"
+        preconditionerType="mgr"
+        krylovTol="1e-4"/>
+    </SinglePhasePoromechanics>
+
+    <PhaseFieldDamageFEM
+      name="damageSolve"
+      discretization="FE1"
+      timeIntegrationOption="SteadyState"
+      fieldName="Damage"
+      localDissipation="Linear"
+      irreversibilityFlag="1"
+      damageUpperBound="1.0"
+      fracturePressureTermFlag="1"
+      logLevel="1"
+      targetRegions="{ Region1 }">
+      <NonlinearSolverParameters
+        newtonMaxIter="200"
+        newtonTol="1.0e-3"/>
+      <LinearSolverParameters
+        solverType="gmres"
+        preconditionerType="amg"/>
+    </PhaseFieldDamageFEM>
+
+    <SolidMechanicsLagrangianSSLE
+      name="solidMech"
+      timeIntegrationOption="QuasiStatic"
+      logLevel="1"
+      discretization="FE1"
+      targetRegions="{ Region1 }"/>
+
+    <SinglePhaseHybridFVM
+      name="singlePhaseFlow"
+      logLevel="1"
+      discretization="singlePhaseHybridMimetic"
+      targetRegions="{ Region1 }"/>
+  </Solvers>
+
+  <Mesh>
+    <VTKMesh 
+      name="mesh"
+      regionAttribute="MIDDLE_RING-LOWER_RING-UPPER_RING-MATRIX"
+      file="../meshes/wellbore6inDeviatedXY10deg.vtu"
+      nodesetNames="{ xneg, xpos, yneg, ypos, zneg, zpos, hole_middle, hole_upper, hole_lower }"/>
+  </Mesh>
+
+  <Events
+    minTime="-1000.0"
+    maxTime="40.0">
+
+    <PeriodicEvent
+      name="vtkOutput"
+      cycleFrequency="2"
+      target="/Outputs/VTKOutput"/>
+ 
+    <PeriodicEvent
+      name="solverApplication0"
+      beginTime="-1000.0"
+      endTime="0.0"
+      forceDt="1000.0"
+      target="/Solvers/phasefieldPoroSolve"/>
+
+    <PeriodicEvent
+      name="solverApplication1"
+      beginTime="0.0"
+      endTime="21.0"
+      forceDt="0.5"
+      target="/Solvers/phasefieldPoroSolve"/>
+
+    <PeriodicEvent
+      name="solverApplication2"
+      beginTime="21.0"
+      forceDt="0.01"
+      target="/Solvers/phasefieldPoroSolve"/>
+
+    <PeriodicEvent
+      name="restarts"
+      cycleFrequency="50"
+      target="/Outputs/restartOutput"/>
+
+  </Events>
+
+  <NumericalMethods>
+    <FiniteElements>
+      <FiniteElementSpace 
+        name="FE1"
+        order="1"/>
+    </FiniteElements>
+    <FiniteVolume>
+      <HybridMimeticDiscretization
+        name="singlePhaseHybridMimetic"
+        innerProductType="quasiTPFA"/>
+    </FiniteVolume>
+  </NumericalMethods>
+
+  <ElementRegions>
+    <CellElementRegion
+      name="Region1"
+      cellBlocks="{ 0_hexahedra, 1_hexahedra, 2_hexahedra, 3_hexahedra }"
+      materialList="{ granite, water }"/>
+  </ElementRegions>
+
+  <Constitutive>
+    <PorousDamageElasticIsotropic
+      name="granite"
+      solidModelName="graniteSolid"
+      porosityModelName="granitePorosity"
+      permeabilityModelName="granitePerm"/>
+
+    <DamageElasticIsotropic
+      name="graniteSolid"
+      defaultDensity="2.7e-9"
+      defaultBulkModulus="24.6913580247e3"
+      defaultShearModulus="16.2601626016e3"
+      lengthScale="1.0"
+      defaultCriticalFractureEnergy="12e-3"
+      criticalStrainEnergy="0"
+      extDrivingForceFlag="1"
+      degradationLowerLimit="1e-6"
+      defaultTensileStrength="18.0"
+      defaultCompressiveStrength="150.0"
+      defaultDeltaCoefficient="5.51"/>
+
+    <BiotPorosity
+      name="granitePorosity"
+      defaultGrainBulkModulus="12.85e4"
+      defaultReferencePorosity="0.05"/>
+
+    <DamagePermeability
+      name="granitePerm"
+      bulkPermeability="1.0e-12"/>
+
+    <CompressibleSinglePhaseFluid
+      name="water"
+      defaultDensity="1e-9"
+      defaultViscosity="1.0e-9"
+      referencePressure="0.000"
+      referenceDensity="1e-9"
+      compressibility="0.0"
+      referenceViscosity="1.0e-9"
+      viscosibility="0.0"/>
+  </Constitutive>
+
+  <FieldSpecifications>    
+    <FieldSpecification
+       name="Gc"
+       initialCondition="1"
+       setNames="{ all }"
+       objectPath="ElementRegions/Region1"
+       fieldName="graniteSolid_criticalFractureEnergy"
+       scale="12e-3"/>
+
+    <FieldSpecification
+      name="tensileStrength"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Region1"
+      fieldName="graniteSolid_tensileStrength"
+      scale="18.0"/>
+
+    <FieldSpecification
+      name="compressiveStrength"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Region1"
+      fieldName="graniteSolid_compressiveStrength"
+      scale="150.0"/>
+
+    <FieldSpecification
+      name="deltaCoefficient"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Region1"
+      fieldName="graniteSolid_deltaCoefficient"
+      scale="5.51"/>
+    
+    <FieldSpecification 
+      name="Sh"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Region1"
+      fieldName="graniteSolid_stress"
+      component="0"
+      scale="-7.0"/>
+
+    <!-- <Traction 
+      name="ShPos"    
+      setNames="{ zpos }"
+      objectPath="faceManager"
+      scale="-3.0"
+      beginTime="-1000.0"
+      tractionType="normal" />
+
+    <Traction 
+      name="ShNeg"    
+      setNames="{ zneg }"
+      objectPath="faceManager"
+      scale="-3.0"
+      beginTime="-1000.0"
+      tractionType="normal" /> -->
+
+    <FieldSpecification 
+      name="SH"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Region1"
+      fieldName="graniteSolid_stress"
+      component="2"
+      scale="-15.0"/>
+
+    <Traction 
+      name="SHPos"    
+      setNames="{ zpos }"
+      objectPath="faceManager"
+      scale="-15.0"
+      beginTime="-1000.0"
+      tractionType="normal" />
+
+    <Traction 
+      name="SHNeg"    
+      setNames="{ zneg }"
+      objectPath="faceManager"
+      scale="-15.0"
+      beginTime="-1000.0"
+      tractionType="normal" />
+
+    <FieldSpecification 
+      name="Sv"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Region1"
+      fieldName="graniteSolid_stress"
+      component="1"
+      scale="-17.5"/>
+
+    <!-- <Traction 
+      name="SvPos"    
+      setNames="{ zpos }"
+      objectPath="faceManager"
+      scale="-17.5"
+      beginTime="-1000.0"
+      tractionType="normal" />
+
+    <Traction 
+      name="SvNeg"    
+      setNames="{ zneg }"
+      objectPath="faceManager"
+      scale="-17.5"
+      beginTime="-1000.0"
+      tractionType="normal" /> -->
+
+    <FieldSpecification 
+      name="xconstraint"    
+      objectPath="nodeManager" 
+      fieldName="totalDisplacement" 
+      component="0" 
+      scale="0.0" 
+      setNames="{xneg, xpos}"/>
+
+    <FieldSpecification 
+      name="yconstraint"    
+      objectPath="nodeManager" 
+      fieldName="totalDisplacement" 
+      component="1" 
+      scale="0.0" 
+      setNames="{yneg, ypos}"/>
+
+    <FieldSpecification 
+      name="zeroDamage"    
+      objectPath="nodeManager" 
+      fieldName="Damage" 
+      scale="0.0" 
+      setNames="{yneg, ypos, zneg, zpos, xneg, xpos}"/> 
+
+    <FieldSpecification 
+      name="zconstraint" 
+      objectPath="nodeManager" 
+      fieldName="totalDisplacement" 
+      component="2" 
+      scale="0.0" 
+      setNames="{ noZDispXNeg, noZDispXPos, noZDispYNeg, noZDispYPos }"
+    />  
+
+    <FieldSpecification 
+      name="initialPressure"
+      initialCondition="1"
+      setNames="{all}"
+      objectPath="ElementRegions/Region1"
+      fieldName="pressure"
+      scale="0.0"
+    />
+
+    <FieldSpecification 
+      name="pressureConstraint"
+      setNames="{xminus, xplus, yminus, yplus}"
+      objectPath="ElementRegions/Region1"
+      fieldName="pressure"
+      scale="0.0"
+    />
+
+    <FieldSpecification
+      name="sourceTerm"
+      objectPath="ElementRegions/Region1/0_hexahedra"
+      fieldName="pressure"
+      scale="37.32"
+      setNames="{ all }"
+      functionName="timeFunction"
+      />
+
+    <FieldSpecification
+      name="pressureUpper"
+      objectPath="ElementRegions/Region1/1_hexahedra"
+      fieldName="pressure"
+      scale="0.0"
+      setNames="{ all }"
+      functionName="timeFunction"
+      />
+    
+    <FieldSpecification
+      name="pressureLower"
+      objectPath="ElementRegions/Region1/2_hexahedra"
+      fieldName="pressure"
+      scale="0.0"
+      setNames="{ all }"
+      functionName="timeFunction"
+      />
+
+    <Traction 
+      name="traction"
+      setNames="{ hole_middle }"
+      objectPath="faceManager"
+      scale="-37.32"
+      tractionType="normal"
+      nodalScaleFlag="1"
+      functionName="timeFunction"    
+      />
+  </FieldSpecifications>
+
+  <Functions>
+    <TableFunction
+      name="timeFunction"
+      inputVarNames="{ time }"
+      coordinates="{ 0, 21.0, 100.0}"
+      values="{ 0.0, 0.6774193548, 0.6774193548 }"/>
+  </Functions>
+
+  <Geometry>
+    <Box
+      name="xplus"
+      xMin="{ 74.4, -75.1, -0.1 }"
+      xMax="{ 75.1, 75.1, 150.1 }"/>
+
+    <Box
+      name="xminus"
+      xMin="{ -75.1, -75.1, -0.1 }"
+      xMax="{ -74.4, 75.1, 150.1 }"/>
+
+    <Box
+      name="yplus"
+      xMin="{-75.1, 74.4, -0.1 }"
+      xMax="{ 75.1, 75.1, 150.1 }"/>
+
+    <Box
+      name="yminus"
+      xMin="{ -75.1, -75.1, -0.1 }"
+      xMax="{ 75.1, -74.4, 150.1 }"/>
+
+    <Box
+      name="middlePlane"
+      xMin="{ -100.0, -100.0, 74.99999 }"
+      xMax="{ 100.0, 100.0, 75.00001 }"/>
+
+    <Box
+      name="noZDispXNeg"
+      xMin="{ -75.1, -75.1, 74.99999 }"
+      xMax="{ -74.9, 75.1, 75.00001 }"/>
+
+    <Box
+      name="noZDispXPos"
+      xMin="{ 74.9, -75.1, 74.99999 }"
+      xMax="{ 75.1, 75.1, 75.00001 }"/>
+
+    <Box
+      name="noZDispYNeg"
+      xMin="{ -75.1, -75.1, 74.99999 }"
+      xMax="{ 75.1, -74.9, 75.00001 }"/>
+
+    <Box
+      name="noZDispYPos"
+      xMin="{ -75.1, 74.9, 74.99999 }"
+      xMax="{ 75.1, 75.1, 75.00001 }"/>
+
+    <Box
+      name="noXDispNeg"
+      xMin="{ -0.1, -75.1, -0.1 }"
+      xMax="{ 0.1, -74.9, 150.1 }"/>
+
+    <Box
+      name="noXDispPos"
+      xMin="{ -0.1, 74.9, -0.1 }"
+      xMax="{ 0.1, 75.1, 150.1 }"/>
+
+    <Box
+      name="noYDispNeg"
+      xMin="{ -75.1, -0.1, -0.1 }"
+      xMax="{ -74.9, 0.1, 150.1 }"/>
+
+    <Box
+      name="noYDispPos"
+      xMin="{ -74.9, -0.1, -0.1 }"
+      xMax="{ -75.1, 0.1, 150.1 }"/>
+
+    <Box
+      name="upperNeg"
+      xMin="{ -75.1, -75.1, 135.9 }"
+      xMax="{ 75.1, -72.9, 150.1 }"/>
+
+    <Box
+      name="lowerPos"
+      xMin="{ -75.1, 72.9, -0.1 }"
+      xMax="{ 75.1, 75.1, 14.1 }"/>
+  </Geometry>
+
+  <Outputs>
+    <VTK
+      name="VTKOutput"
+      plotFileRoot="wellboreExp_strikeslip_b=0p8_l=1_Sh=7_deviated10deg_ShTraction"/>
+
+    <Restart
+      name="restartOutput"/>
+  </Outputs>
+
+</Problem>
