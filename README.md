@@ -1,11 +1,20 @@
 # FORGE
-Repository containing the input files  for geos models of Utah FORGE
+Repository containing the input files for geos models of [Utah FORGE](https://utahforge.com/).
 
 ## Description
-This repository serves as an input deck for numerical models reported in two Utah FORGE projects (see GDR submission `XXX` and `XXX`). 
-Three kinds of simulations are included: (i) hydraulic fracturing simulation (`HydroFrac` folder), (ii) phase-field simulation (`PhaseField` folder), and (iii) thermo-hydro-mechanical simulation (`ThermoHydroMech` folder). 
-These serve as the input deck
-Detailed structure of the repository is given below. 
+This repository provides the input deck for numerical models associated with two Utah FORGE research projects: `Closing the Loop Between In situ Stress Complexity and EGS Fracture Compexity` (Project Number: 2-2446) and `Coupled Investigation of Fracture Permeability Impact on Reservoir Stress and Seismic Slip Behavior` (Project Number: 5-2428). 
+
+Three kinds of simulation decks are included: (i) hydraulic fracturing simulation (`HydroFrac` folder), (ii) phase-field simulation (`PhaseField` folder), and (iii) thermo-hydro-mechanical simulation (`ThermoHydroMech` folder). 
+
+These are the input decks related to the following GDR submissions:
+
+- **GDR Submission XXX**
+  - Folders: **[Folder Name 1]**
+
+- **GDR Submission XXX**
+  - Folders: **[Folder Name 2]**
+
+The detailed structure of the repository is provided below. 
 
 ## Repository Structure
 ```
@@ -41,14 +50,15 @@ FORGE                                                                     # Main
 └── README.md                        
 ```
 
+
 ## How to run 
-### For simulations in `HydroFrac` and `ThermoHydroMech`
+### For input files in `HydroFrac` and `ThermoHydroMech`
 One should swith to the FORGE modeling branch:
 ```
 git checkout origin/frankfei/forge-HF
 ```
 
-### For simulations in `PhaseField`
+### For input files in `PhaseField`
 One should swith to the phase-field modeling branch:
 ```
 git checkout origin/feature/frank/phasefield_nucleation_poromech
