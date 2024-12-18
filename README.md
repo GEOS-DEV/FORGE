@@ -64,4 +64,4 @@ One should swith to the phase-field modeling branch:
 git checkout origin/feature/frank/phasefield_nucleation_poromech
 ```
 
-**Note:** Refer to the [GEOS documentation](https://geosx-geosx.readthedocs-hosted.com/en/latest/index.html) for instruction on how to install and run GEOS.  
+**Note:** Refer to the [GEOS documentation](https://geosx-geosx.readthedocs-hosted.com/en/latest/index.html) for instructions on how to install and run GEOS.  
