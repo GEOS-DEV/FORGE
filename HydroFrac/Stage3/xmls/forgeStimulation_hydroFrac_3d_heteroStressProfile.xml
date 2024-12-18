@@ -62,6 +62,8 @@
       targetRegions="{ Domain }"
       nodeBasedSIF="1"      
       initialRockToughness="5e6"
+      toughnessScalingFactor="0.55"
+      fractureOrigin="{200.0, 240.0, 298.0}"
       mpiCommOrder="1"/>
   </Solvers>
 
@@ -155,16 +157,16 @@
     <TableFunction
       name="injectorTotalRateTable"
       inputVarNames="{ time }"
-      coordinateFiles="{ ../../injectionTable/time_original.geos }"
-      voxelFile="../../injectionTable/rate_original.geos" 
+      coordinateFiles="{ ../injectionTable3/time_original.geos }"
+      voxelFile="../injectionTable3/rate_original.geos" 
       interpolation="lower"/>
 
     <TableFunction
       name="ShminFunction"
       inputVarNames="{ elementCenter }"
-      coordinateFiles="{ ../../stressProfile/xlin.geos, ../../stressProfile/ylin.geos, ../../stressProfile/zlin.geos }"
-      voxelFile="../../stressProfile/sigmah_delta=0p5.geos"
-      interpolation="lower"/>
+      coordinateFiles="{ ../stressProfile/xlin.geos, ../stressProfile/ylin.geos, ../stressProfile/zlin.geos }"
+      voxelFile="../stressProfile/Shmin.geos"
+      interpolation="upper"/>
   </Functions>
 
   <FieldSpecifications>
@@ -265,7 +267,7 @@
   <Outputs>
     <VTK
       name="vtkOutput"
-      plotFileRoot="vtkOutput_stimulation_3_1x1cellSize_DFNPerm_refinedRate_stressRoughness_delta=0p5"/>
+      plotFileRoot="vtkOutput_stimulation3_forgeStressProfile"/>
 
     <Restart
       name="restartOutput"/>

@@ -62,6 +62,8 @@
       targetRegions="{ Domain }"
       nodeBasedSIF="1"      
       initialRockToughness="-1.0"
+      toughnessScalingFactor="0.55"
+      fractureOrigin="{200.0, 240.0, 298.0}"
       mpiCommOrder="1"/>
   </Solvers>
 
@@ -70,11 +72,11 @@
       name="mesh1"
       elementTypes="{ C3D8 }"
       xCoords="{ -20, 180, 198, 200, 202, 220, 400 }"
-      yCoords="{ -300, 100, 238, 240, 242, 380, 800 }"
-      zCoords="{ 30, 240, 296, 298, 300, 480, 790}"
+      yCoords="{ -300, 140, 238, 240, 242, 340, 800 }"
+      zCoords="{ 30, 230, 296, 298, 300, 550, 790}"
       nx="{ 15, 9, 2, 2, 9, 9 }"
-      ny="{ 22, 138, 2, 2, 138, 23 }"
-      nz="{ 10, 56, 2, 2, 180, 12 }"
+      ny="{ 22, 98, 2, 2, 98, 23 }"
+      nz="{ 10, 66, 2, 2, 250, 12 }"
       cellBlockNames="{ cb1 }"/>
   </Mesh>
 
@@ -155,9 +157,10 @@
     <TableFunction
       name="injectorTotalRateTable"
       inputVarNames="{ time }"
-      coordinateFiles="{ ../../injectionTable/time_original.geos }"
-      voxelFile="../../injectionTable/rate_original.geos" 
+      coordinateFiles="{ ../injectionTable3/time_original.geos }"
+      voxelFile="../injectionTable3/rate_original.geos" 
       interpolation="lower"/>
+
   </Functions>
 
   <FieldSpecifications>
@@ -168,7 +171,7 @@
       objectPath="ElementRegions/Domain/cb1"
       fieldName="rock_stress"
       component="0"
-      scale="-4.2e7"/>
+      scale="-4.345e7"/>
 
     <FieldSpecification 
       name="SH"
@@ -253,13 +256,6 @@
       setNames="{ source }"
       functionName="injectorTotalRateTable"/>
 
-    <!-- <FieldSpecification
-       name="wellBoreVolume"
-       objectPath="ElementRegions/Fracture"
-       fieldName="wellBoreVolume"
-       setNames="{ source }"
-       scale="5.0"/> -->
-
     <FieldSpecification
       name="KIC_00"
       initialCondition="1"
@@ -314,7 +310,7 @@
       setNames="{ all }"
       objectPath="ElementRegions/Domain/cb1"
       fieldName="K_IC_02"
-      scale="6.58e6"/>
+      scale="5.5e6"/>
     
     <FieldSpecification
       name="KIC_12"
@@ -322,7 +318,7 @@
       setNames="{ all }"
       objectPath="ElementRegions/Domain/cb1"
       fieldName="K_IC_12"
-      scale="6.58e6"/>
+      scale="5.5e6"/>
     
     <FieldSpecification
       name="KIC_22"
@@ -330,13 +326,13 @@
       setNames="{ all }"
       objectPath="ElementRegions/Domain/cb1"
       fieldName="K_IC_22"
-      scale="6.58e6"/>
+      scale="5.5e6"/>
   </FieldSpecifications>
 
   <Outputs>
     <VTK
       name="vtkOutput"
-      plotFileRoot="vtkOutput_stimulation_3_1x1cellSize_DFNPerm_refinedRate_deltaKIc=1p58"/>
+      plotFileRoot="vtkOutput_stimulation3_deltaKIc=5e5_scale=0p55"/>
 
     <Restart
       name="restartOutput"/>
