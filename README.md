@@ -1,5 +1,5 @@
 # FORGE
-Repository for Utah FORGE modeling files 
+Repository containing the input files  for geos models of Utah FORGE
 
 ## Description
 This repository serves as an input deck for numerical models reported in two Utah FORGE projects (see GDR submission `XXX` and `XXX`). 
@@ -53,12 +53,5 @@ One should swith to the phase-field modeling branch:
 ```
 git checkout origin/feature/frank/phasefield_nucleation_poromech
 ```
-### To run GEOS
-```
-GEOS_BUILD_DIR/bin/geosx -i your-problem.xml
-```
-or 
-```
-mpirun -np NUM_PROCESSOR GEOS_BUILD_DIR/bin/geosx -i your-problem.xml -x X_PARTITIONS -y Y_PARTITIONS -z Z_PARTITIONS
-```
-for parallel run. 
+
+**Note:** Refer to the [GEOS documentation](https://geosx-geosx.readthedocs-hosted.com/en/latest/index.html) for instruction on how to install and run GEOS.  
